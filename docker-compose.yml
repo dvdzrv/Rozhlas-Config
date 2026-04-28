@@ -1,0 +1,97 @@
+services:
+  nginx:
+    image: nginx:alpine
+    container_name: nginx-proxy
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./nginx/conf.d:/etc/nginx/conf.d:ro
+      - /etc/letsencrypt:/etc/letsencrypt:ro
+    networks:
+      - web
+
+
+  wordpress:
+    image: wordpress:php8.2-apache
+    container_name: hammerwerk_wp
+    restart: unless-stopped
+    environment:
+      WORDPRESS_DB_HOST: db
+      WORDPRESS_DB_USER: wpuser
+      WORDPRESS_DB_PASSWORD: wppass
+      WORDPRESS_DB_NAME: wpdb
+    depends_on:
+      - db
+    volumes:
+      - wp_data:/var/www/html
+    networks:
+      - web
+
+  db:
+    image: mysql:8.0
+    container_name: hammerwerk_db
+    restart: unless-stopped
+    environment:
+      MYSQL_DATABASE: wpdb
+      MYSQL_USER: wpuser
+      MYSQL_PASSWORD: wppass
+      MYSQL_ROOT_PASSWORD: rootpass
+    volumes:
+      - db_data:/var/lib/mysql
+    networks:
+      - web
+
+
+
+
+  homepage:
+    build: ./homepage/sostrv-homepage
+    container_name: homepage
+    restart: unless-stopped
+    networks:
+      - web
+
+
+
+
+  websklad-backend:
+    build:
+      context: ./websklad/WebSklad-Backend  # Assuming backend is in a sibling directory, user can adjust
+    container_name: websklad-backend
+    environment:
+      - DEFAULT_PASSWORD=${DEFAULT_PASSWORD:-heslo}
+      - TABLE_NAME=${TABLE_NAME:-tabulka}
+    volumes:
+      - ./db:/app/db
+      - ./db/imgs:/app/db/imgs
+    restart: always
+    networks:
+      - web
+
+  websklad-frontend:
+    build:
+      context: ./websklad/WebSklad-Frontend
+      args:
+        - REACT_APP_API_BASE_URL=${REACT_APP_API_BASE_URL:-https://websklad.sostrv.org/api}
+    container_name: websklad-frontend
+    depends_on:
+      - websklad-backend
+    restart: always
+    networks:
+      - web
+
+
+
+
+
+
+networks:
+  web:
+    driver: bridge
+
+volumes:
+  db_data:
+  wp_data:
