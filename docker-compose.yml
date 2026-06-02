@@ -84,7 +84,27 @@ services:
       - web
 
 
+  hlasovanie-backend:
+    build:
+      context: ./hlasovanie/rozhlas-be
+    container_name: hlasovanie-backend
+    restart: always
+#    ports:
+#      - "9000:9000"
+    networks:
+      - web
 
+  hlasovanie-frontend:
+    build:
+      context: ./hlasovanie/Rozhlas-FE
+    container_name: hlasovanie-frontend
+    restart: always
+#    environment:
+#      - VITE_API_URL=${VITE_API_URL:-http://194.160.224.5:9000}
+    networks:
+      - web
+    depends_on:
+      - hlasovanie-backend
 
 
 
