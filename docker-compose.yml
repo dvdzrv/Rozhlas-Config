@@ -59,7 +59,7 @@ services:
 
   websklad-backend:
     build:
-      context: ./websklad/WebSklad-Backend  # Assuming backend is in a sibling directory, user can adjust
+      context: ./websklad/WebSklad-Backend
     container_name: websklad-backend
     environment:
       - DEFAULT_PASSWORD=${DEFAULT_PASSWORD:-heslo}
